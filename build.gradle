@@ -2,18 +2,11 @@ buildscript {
     repositories {
         mavenLocal()
         jcenter()
-        mavenCentral()
     }
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE"
         classpath 'com.ofg:uptodate-gradle-plugin:1.5.1'
-        classpath 'se.transmode.gradle:gradle-docker:1.2'
         classpath "io.codearte.accurest:accurest-gradle-plugin:$accurestVersion"
-        classpath 'com.blogspot.toomuchcoding:gradle-test-profiler:0.3.1'
-
-        if (project.hasProperty("coverage")) {
-            classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:1.0.2'
-        }
     }
 }
 
@@ -21,28 +14,21 @@ apply plugin: 'groovy'
 apply plugin: 'spring-boot'
 apply plugin: 'maven-publish'
 apply plugin: 'com.ofg.uptodate'
-apply plugin: 'docker'
 apply plugin: 'accurest'
-apply plugin: 'com.blogspot.toomuchcoding.testprofiler'
 
 ext {
     versionPrefix = "CD"
     buildNrLoc = project.hasProperty('buildNr') ? "${buildNr}" : "000"
     currentVersion = "${versionPrefix}-${buildNrLoc}"
-    projectGroupId = 'com.ofg'
+    projectGroupId = 'pl.devoxx'
 
-    contractsDir = file("${project.rootDir}/repository/mappings/com/ofg/twitter-places-analyzer")
+    contractsDir = file("${project.rootDir}/repository/mappings/pl/devoxx/aggregatr")
     wiremockStubsOutputDirRoot = file("${project.buildDir}/production/${project.name}-stubs/")
     wiremockStubsOutputDir = new File(wiremockStubsOutputDirRoot, 'mappings/')
-
-    //microInfraSpring and versions of other dependencies were moved to gradle.properties
 }
 
 group = projectGroupId
 version = currentVersion
-
-sourceSets.main.java.srcDirs = []
-sourceSets.main.groovy.srcDirs += ["src/main/java"]
 
 sourceCompatibility = '1.8'
 
@@ -69,21 +55,6 @@ test {
     testLogging {
         exceptionFormat = 'full'
     }
-    exclude '**/*UISpec.*'
-}
-
-task guiTest(type: Test) {
-    jvmArgs project.gradle.startParameter.systemPropertiesArgs.entrySet().collect{"-D${it.key}=${it.value}"}
-    testLogging {
-        exceptionFormat = 'full'
-    }
-    include '**/*UISpec.*'
-
-    reports.html {
-        destination = file("${reporting.baseDir}/guiTests")
-    }
-    group = "Verification"
-    description = "Runs the acceptance GUI tests with Geb."
 }
 
 repositories {
@@ -110,6 +81,7 @@ dependencies {
     compile 'org.codehaus.gpars:gpars:1.2.1'
     compile 'net.sf.ehcache:ehcache:2.10.0'
     compile "com.ofg:micro-infra-spring-boot-starter:$microInfraSpringVersion"
+    compile 'io.reactivex:rxjava:1.0.11'
 
     runtime 'cglib:cglib-nodep:3.1'
     runtime 'org.objenesis:objenesis:2.1'
@@ -122,86 +94,13 @@ dependencies {
     }
     testCompile "org.springframework.boot:spring-boot-starter-test"
     testCompile "com.ofg:micro-infra-spring-test:$microInfraSpringVersion"
-
-    testCompile "org.gebish:geb-core:$gebVersion"
-    testCompile "org.gebish:geb-spock:$gebVersion"
     testCompile "org.spockframework:spock-spring"
-    testCompile "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
-    testCompile "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
-    testCompile "org.seleniumhq.selenium:selenium-htmlunit-driver:$seleniumVersion"
     testCompile "com.jayway.restassured:rest-assured:$restAssuredVersion"
     testCompile "com.jayway.restassured:spring-mock-mvc:$restAssuredVersion"
-    testCompile "io.codearte.accurest:accurest-core:$accurestVersion"
-}
-
-task docker(type: Docker) {
-    dependsOn 'build'
-    dryRun true
-    setEnvironment('CONFIG_FOLDER', '/properties')
-    addFile("properties", "/properties")
-    addFile("${libsDir}/${project.name}-${currentVersion}.jar", "/${project.name}/${project.name}.jar")
-    exposePort(8095)
-    entryPoint(['java', '-jar', "/${project.name}/${project.name}.jar"])
-}
-
-testprofiler {
-    minTestThreshold = 100
-
-    buildBreaker {
-        maxTestThreshold = project.hasProperty('maxTestThreshold') ? project.property('maxTestThreshold') : 30_000
-        ifTestsExceedMaxThreshold {
-            displayWarning()
-        }
-    }
-}
-
-if (project.hasProperty("coverage")) {
-    apply plugin: 'codenarc'
-    apply plugin: 'jacoco'
-    apply plugin: 'sonar-runner'
-    apply plugin: 'com.github.kt3k.coveralls'
-
-    jacoco {
-        toolVersion = '0.7.4.201502262128'
-    }
-
-    jacocoTestReport {
-        reports {
-            xml.enabled = true // coveralls plugin depends on xml format report
-            html.enabled = true
-        }
-    }
-
-    codenarc {
-        configFile = file('config/codenarc/rules.groovy')
-        maxPriority1Violations = 0
-        maxPriority2Violations = 6
-        maxPriority3Violations = 10
-        reportFormat = 'xml'
-        ignoreFailures = true
-    }
-
-    dependencies {
-        codenarc 'org.codenarc:CodeNarc:0.21'
-    }
-
-    test {
-        jacoco {
-            excludes = ['*Configuration']
-        }
-    }
-
-    sonarRunner {
-        sonarProperties {
-            //TODO: fill this
-            property "sonar.host.url", ""
-            property "sonar.junit.reportsPath", "build/test-results"
-        }
-    }
 }
 
 accurest {
-    baseClassForTests = 'com.ofg.twitter.places.accurest.BaseMockMvcSpec'
+    baseClassForTests = 'pl.devoxx.accurest.BaseMockMvcSpec'
     basePackageForTests = 'accurest'
     contractsDslDir = contractsDir
     generatedTestSourcesDir = file("${project.buildDir}/generated-sources/accurest")
@@ -210,22 +109,9 @@ accurest {
 
 test.dependsOn { generateAccurest } //See: https://github.com/Codearte/accurest/issues/36
 
-task addHashFile << {
-    String gitCmd = "git log --pretty=format:'%H' -n 1"
-    def proc = gitCmd.execute()
-    proc.waitFor()
-    new File("commitHash.txt").withWriter { it << proc.in.text }
-}
-
-jar {
-    dependsOn addHashFile
-    from "commitHash.txt"
-}
-
-task stubsJar(type: Jar, dependsOn: ["generateWiremockClientStubs", "addHashFile"]) {
+task stubsJar(type: Jar, dependsOn: ["generateWiremockClientStubs"]) {
     baseName = "${project.name}-stubs"
     from wiremockStubsOutputDirRoot
-    from "commitHash.txt"
 }
 
 bootRepackage {
@@ -262,16 +148,4 @@ publishing {
             }
         }
     }
-}
-
-task uploadArchives(dependsOn: 'publish') {
-    group "publishing"
-    description "DEPRECATED - Publishes produced archives - DEPRECATED - use 'publish' task"
-    doFirst {
-        logger.warn("DEPRECATION WARNING. Task 'uploadArchives' is deprecated. Use 'publish' task instead.")
-    }
-}
-
-wrapper {
-    gradleVersion '2.2.1'
 }
