@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/chmieleo"
+  },
+  "response": {
+    "status": 200,
+    "body": "Hello world!"
+  }
+}
