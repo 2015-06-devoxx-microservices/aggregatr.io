@@ -1,10 +1,5 @@
 {
     "pl": {
-        "this": "com/ofg/twitter-places-analyzer",
-        "dependencies": {
-            "collerator": {
-                "path": "com/ofg/twitter-places-collerator"
-            }
-        }
+        "this": "pl/devoxx/aggregatr"
     }
 }
