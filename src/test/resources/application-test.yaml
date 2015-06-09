@@ -14,3 +14,5 @@ stubrunner.stubs:
   module: stub-runner-examples
 
 acceptance-tests.timeout: 8
+
+stubrunner.work-offline: true
