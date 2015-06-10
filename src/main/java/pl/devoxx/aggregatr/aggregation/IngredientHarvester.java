@@ -5,11 +5,9 @@ import com.nurkiewicz.asyncretry.RetryExecutor;
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.devoxx.aggregatr.model.Ingredients;
+import pl.devoxx.aggregatr.model.Ingredient;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Collections;
-import java.util.List;
 
 import static com.netflix.hystrix.HystrixCommand.Setter.withGroupKey;
 import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
@@ -27,17 +25,19 @@ class IngredientHarvester {
     }
 
     @SuppressWarnings("unchecked")
-    ListenableFuture<List<Ingredients>> harvest(String url) {
+    ListenableFuture<Ingredient> harvest(String url) {
         return serviceRestClient.forExternalService()
-                .retryUsing(retryExecutor)
+                    .retryUsing(retryExecutor)
                 .get()
-                .withCircuitBreaker(withGroupKey(asKey(url)), () -> {
-                    LOG.error("Can't connect to {}", url);
-                    return Collections.emptyList();
-                })
-                .onUrl("http://"+url + ".pl:8030" + "/" + url)
+                    .withCircuitBreaker(withGroupKey(asKey(url)), () -> {
+                        LOG.error("Can't connect to {}", url);
+                        return "";
+                    })
+                    .withCircuitBreaker(withGroupKey(asKey(url)))
+                .onUrl("http://" + url + ".pl:8030" + "/" + url.substring(0,1))
                 .andExecuteFor()
                 .anObject()
-                .ofTypeAsync((Class) Ingredients[].class);
+                    .ofTypeAsync(Ingredient.class);
     }
+
 }

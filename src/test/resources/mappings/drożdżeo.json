@@ -1,13 +1,13 @@
 {
   "request": {
     "method": "GET",
-    "url": "/c"
+    "url": "/d"
   },
   "response": {
     "status": 200,
     "headers": {
       "Content-Type": "application/json"
     },
-    "body": "{ \"type\": \"HOP\", \"quantity\": 50 }"
+    "body": "{ \"type\": \"YIEST\", \"quantity\": 100 }"
   }
 }
