@@ -2,9 +2,10 @@ package pl.devoxx.aggregatr.aggregation.model;
 
 import com.google.common.collect.Lists;
 
+import java.util.Iterator;
 import java.util.List;
 
-public class Ingredients {
+public class Ingredients implements Iterable<Ingredient> {
 
     public Ingredients() {
     }
@@ -15,4 +16,8 @@ public class Ingredients {
 
     public List<Ingredient> ingredients = Lists.newArrayList();
 
+    @Override
+    public Iterator<Ingredient> iterator() {
+        return ingredients.iterator();
+    }
 }

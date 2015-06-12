@@ -1,7 +1,10 @@
 package pl.devoxx.aggregatr.aggregation;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.nurkiewicz.asyncretry.RetryExecutor;
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
@@ -15,6 +18,7 @@ import rx.Observable;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -23,15 +27,28 @@ import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
 
 class IngredientsAggregator {
 
+    private static final Cache<IngredientType, Integer> DATABASE = CacheBuilder.newBuilder().build();
+
     private final IngredientHarvester ingredientHarvester;
     private final IngredientsProperties ingredientsProperties;
-    private static final Cache<IngredientType, Integer> DATABASE = CacheBuilder.newBuilder().recordStats().build();
+    private final Map<IngredientType, Meter> meters;
 
     IngredientsAggregator(ServiceRestClient serviceRestClient,
                           RetryExecutor retryExecutor,
-                          IngredientsProperties ingredientsProperties) {
+                          IngredientsProperties ingredientsProperties,
+                          MetricRegistry metricRegistry) {
         this.ingredientHarvester = new IngredientHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
         this.ingredientsProperties = ingredientsProperties;
+        this.meters = ImmutableMap.of(
+                IngredientType.WATER, metricRegistry.meter(getMetricName(IngredientType.WATER)),
+                IngredientType.HOP, metricRegistry.meter(getMetricName(IngredientType.HOP)),
+                IngredientType.MALT, metricRegistry.meter(getMetricName(IngredientType.MALT)),
+                IngredientType.YIEST, metricRegistry.meter(getMetricName(IngredientType.YIEST))
+        );
+    }
+
+    private String getMetricName(IngredientType ingredientType) {
+        return "ingredients." + ingredientType.toString().toLowerCase();
     }
 
     @Async
@@ -42,6 +59,7 @@ class IngredientsAggregator {
                 .forEach(ingredient -> {
                     int quantity = Optional.ofNullable(DATABASE.getIfPresent(ingredient.type)).orElse(0);
                     DATABASE.put(ingredient.type, quantity + ingredient.quantity);
+                    meters.get(ingredient.type).mark(ingredient.quantity);
                 });
         return getIngredientsStatus();
     }
