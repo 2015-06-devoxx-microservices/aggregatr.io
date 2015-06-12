@@ -4,7 +4,7 @@
 # Environment where our app is deployed, configuration will be taken from corresponding dir
 export APP_ENV="prod"
 # Git repository with configuration. Absolute path should be used.
-export CONFIG_FOLDER="properties"
+export CONFIG_FOLDER="/home/marcin/repo/devoxx/properties"
 # For secretProd env, ENCRYPT_KEY is required.
 # Use encrypt.key if you pass it as -D option when running java
 export ENCRYPT_KEY="secretEncryptKey"

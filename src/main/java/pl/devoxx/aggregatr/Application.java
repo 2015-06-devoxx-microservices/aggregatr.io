@@ -11,7 +11,7 @@ import static com.ofg.config.BasicProfiles.*;
 
 @SpringBootApplication
 @EnableAsync
-class Application {
+public class Application {
 
     public static void main(String[] args) {
         SpringApplication application = new SpringApplication(Application.class);
