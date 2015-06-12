@@ -44,7 +44,6 @@ class IngredientsAggregator {
             this.retryExecutor = retryExecutor;
         }
 
-        @SuppressWarnings("unchecked")
         ListenableFuture<Ingredient> harvest(String url) {
             return serviceRestClient.forExternalService()
                     .retryUsing(retryExecutor)
@@ -54,7 +53,7 @@ class IngredientsAggregator {
                         return "";
                     })
                     .withCircuitBreaker(withGroupKey(asKey(url)))
-                    .onUrl("http://" + url + ".pl:8030" + "/" + url.substring(0,1))
+                    .onUrl("http://localhost:8030/" + url)
                     .andExecuteFor()
                     .anObject()
                     .ofTypeAsync(Ingredient.class);

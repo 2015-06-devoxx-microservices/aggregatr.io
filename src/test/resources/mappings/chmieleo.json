@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "url": "/c"
+    "url": "/chmieleo"
   },
   "response": {
     "status": 200,

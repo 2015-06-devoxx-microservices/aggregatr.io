@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "url": "/d"
+    "url": "/drozdzeo"
   },
   "response": {
     "status": 200,
