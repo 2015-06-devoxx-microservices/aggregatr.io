@@ -1,4 +1,4 @@
-package pl.devoxx.aggregatr.model;
+package pl.devoxx.aggregatr.aggregation.model;
 
 public class Ingredient {
     public IngredientType type;
