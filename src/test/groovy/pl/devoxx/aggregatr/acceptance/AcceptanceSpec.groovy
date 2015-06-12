@@ -12,14 +12,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @ContextConfiguration
 class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
 
-    def 'should call in parallel chmieleo.pl, słodeo.pl, wodeo.pl, drożdzeo.pl to aggregate ingredients'() {
-        given: 'a request'
-        when: 'getting /ingredients'
-            MvcResult result = mockMvc.perform(get(create('/ingredients'))).andDo(print()).andReturn()
-        then: 'aggregated ingredients will be presented'
-            !result.resolvedException
-            new JsonSlurper().parseText(result.response.contentAsString) == new JsonSlurper().parseText('''
-                { "ingredients": [{"type":"HOP","quantity":50},{"type":"MALT","quantity":200},{"type":"WATER","quantity":1000},{"type":"YIEST","quantity":100}]}
+    def 'should call external services to aggregate ingredients'() {
+        when:
+            MvcResult result = getting_ingredients()
+        then:
+            aggregated_ingredients_are_present(result)
+    }
+
+    private MvcResult getting_ingredients() {
+        return mockMvc.perform(get(create('/ingredients'))).andDo(print()).andReturn()
+    }
+
+    private void aggregated_ingredients_are_present(MvcResult result) {
+        assert !result.resolvedException
+        assert new JsonSlurper().parseText(result.response.contentAsString) == new JsonSlurper().parseText('''
+                {
+                    "ingredients": [
+                            {"type":"HOP","quantity":50},
+                            {"type":"MALT","quantity":200},
+                            {"type":"WATER","quantity":1000},
+                            {"type":"YIEST","quantity":100}
+                        ]
+                }
             ''')
     }
 
