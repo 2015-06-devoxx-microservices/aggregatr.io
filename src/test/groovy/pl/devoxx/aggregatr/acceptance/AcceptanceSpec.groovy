@@ -25,16 +25,18 @@ class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
 
     private void aggregated_ingredients_are_present(MvcResult result) {
         assert !result.resolvedException
-        assert new JsonSlurper().parseText(result.response.contentAsString) == new JsonSlurper().parseText('''
+        Map parsedResult = new JsonSlurper().parseText(result.response.contentAsString)
+        Map expectedResult = new JsonSlurper().parseText('''
                 {
                     "ingredients": [
-                            {"type":"HOP","quantity":50},
                             {"type":"MALT","quantity":200},
                             {"type":"WATER","quantity":1000},
+                            {"type":"HOP","quantity":50},
                             {"type":"YIEST","quantity":100}
                         ]
                 }
             ''')
+       assert parsedResult == expectedResult
     }
 
 }

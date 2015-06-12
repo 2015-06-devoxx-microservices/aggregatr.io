@@ -20,7 +20,7 @@ public class IngredientsController {
 
     @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.GET)
     public Ingredients distributeIngredients() {
-        return new Ingredients(ingredientsAggregator.fetchIngredients().toBlocking().toIterable());
+        return ingredientsAggregator.fetchIngredients();
     }
 
 }

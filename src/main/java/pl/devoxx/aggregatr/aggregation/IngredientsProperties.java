@@ -12,6 +12,7 @@ public class IngredientsProperties {
 
     private String serviceNames = "chmieleo,slodeo,wodeo,drozdzeo";
     private String rootUrl = "http://localhost:8030/";
+    private Integer threshold = 1000;
 
     public List<String> getListOfServiceNames() {
         return Arrays.asList(serviceNames.split(","));
