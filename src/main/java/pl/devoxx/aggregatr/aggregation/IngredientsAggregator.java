@@ -10,7 +10,6 @@ import pl.devoxx.aggregatr.aggregation.model.Ingredient;
 import rx.Observable;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
 
 import static com.netflix.hystrix.HystrixCommand.Setter.withGroupKey;
 import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
@@ -18,16 +17,18 @@ import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
 class IngredientsAggregator {
 
     private final IngredientHarvester ingredientHarvester;
-    private final List<String> listOfUrls;
+    private final IngredientsProperties ingredientsProperties;
 
-    IngredientsAggregator(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, List<String> listOfUrls) {
-        this.ingredientHarvester = new IngredientHarvester(serviceRestClient, retryExecutor);
-        this.listOfUrls = listOfUrls;
+    IngredientsAggregator(ServiceRestClient serviceRestClient,
+                          RetryExecutor retryExecutor,
+                          IngredientsProperties ingredientsProperties) {
+        this.ingredientHarvester = new IngredientHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
+        this.ingredientsProperties = ingredientsProperties;
     }
 
     @Async
     Observable<Ingredient> fetchIngredients() {
-        return Observable.from(listOfUrls)
+        return Observable.from(ingredientsProperties.getListOfServiceNames())
                 .map(ingredientHarvester::harvest)
                 .flatMap((ListenableFuture<Ingredient> future) -> Observable.from(future));
     }
@@ -38,10 +39,12 @@ class IngredientsAggregator {
 
         private final ServiceRestClient serviceRestClient;
         private final RetryExecutor retryExecutor;
+        private IngredientsProperties ingredientsProperties;
 
-        IngredientHarvester(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor) {
+        IngredientHarvester(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, IngredientsProperties ingredientsProperties) {
             this.serviceRestClient = serviceRestClient;
             this.retryExecutor = retryExecutor;
+            this.ingredientsProperties = ingredientsProperties;
         }
 
         ListenableFuture<Ingredient> harvest(String url) {
@@ -53,7 +56,7 @@ class IngredientsAggregator {
                         return "";
                     })
                     .withCircuitBreaker(withGroupKey(asKey(url)))
-                    .onUrl("http://localhost:8030/" + url)
+                    .onUrl(ingredientsProperties.getRootUrl() + url)
                     .andExecuteFor()
                     .anObject()
                     .ofTypeAsync(Ingredient.class);

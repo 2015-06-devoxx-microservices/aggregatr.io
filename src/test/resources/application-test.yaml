@@ -7,4 +7,5 @@ stubrunner.stubs:
 
 stubrunner.work-offline: true
 
-listOfUrls: chmieleo,slodeo,wodeo,drozdzeo
+ingredients:
+  serviceNames: chmieleo,slodeo,wodeo,drozdzeo

@@ -11,8 +11,13 @@ import java.util.Arrays;
 @Configuration
 class AggregationConfiguration {
     @Bean
-    IngredientsAggregator ingredientsAggregator(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, @Value("${listOfUrls}") String listOfUrls) {
-        return new IngredientsAggregator(serviceRestClient, retryExecutor, Arrays.asList(listOfUrls.split(",")));
+    IngredientsAggregator ingredientsAggregator(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, IngredientsProperties ingredientsProperties) {
+        return new IngredientsAggregator(serviceRestClient, retryExecutor, ingredientsProperties);
+    }
+
+    @Bean
+    IngredientsProperties ingredientsProperties() {
+        return new IngredientsProperties();
     }
 }
 
