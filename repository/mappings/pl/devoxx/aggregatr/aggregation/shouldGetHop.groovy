@@ -6,7 +6,7 @@ io.codearte.accurest.dsl.GroovyDsl.make {
             header 'Content-Type': 'application/vnd.pl.devoxx.aggregatr.v1+json'
         }
         body(
-                items: ['MALT']
+                items: ['HOP']
         )
     }
     response {
