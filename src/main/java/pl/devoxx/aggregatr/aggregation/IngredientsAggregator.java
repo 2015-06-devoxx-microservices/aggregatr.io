@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import pl.devoxx.aggregatr.aggregation.model.Ingredient;
 import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
+import pl.devoxx.aggregatr.aggregation.model.Order;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
@@ -51,14 +52,14 @@ class IngredientsAggregator {
         return "ingredients." + ingredientType.toString().toLowerCase();
     }
 
-    Ingredients fetchIngredients() {
-        final List<ListenableFuture<Ingredient>> futures = ingredientsProperties
-                .getListOfServiceNames()
+    Ingredients fetchIngredients(Order order) {
+        List<ListenableFuture<Ingredient>> futures = ingredientsProperties
+                .getListOfServiceNames(order)
                 .stream()
                 .map(ingredientHarvester::harvest)
                 .collect(Collectors.toList());
-        final ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
-        final List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
+        ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
+        List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
         allIngredients.forEach(this::updateIngredientCache);
         return getIngredientsStatus();
     }

@@ -6,6 +6,3 @@ stubrunner.stubs:
   module: stub-runner-examples
 
 stubrunner.work-offline: true
-
-ingredients:
-  serviceNames: chmieleo,slodeo,wodeo,drozdzeo

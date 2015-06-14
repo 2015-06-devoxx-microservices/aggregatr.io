@@ -5,9 +5,9 @@ io.codearte.accurest.dsl.GroovyDsl.make {
         headers {
             header 'Content-Type': 'application/vnd.pl.devoxx.aggregatr.v1+json'
         }
-        body(
-            items: ['MALT']
-        )
+        body('''
+            { "items" : ["MALT"] }
+        ''')
     }
     response {
         status 200
