@@ -1,9 +1,9 @@
 package pl.devoxx.aggregatr.aggregation;
 
+import com.google.common.base.Splitter;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.Arrays;
 import java.util.List;
 
 @ConfigurationProperties("ingredients")
@@ -15,6 +15,6 @@ public class IngredientsProperties {
     private Integer threshold = 1000;
 
     public List<String> getListOfServiceNames() {
-        return Arrays.asList(serviceNames.split(","));
+        return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(serviceNames);
     }
 }
