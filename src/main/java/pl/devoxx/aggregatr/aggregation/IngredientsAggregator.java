@@ -5,19 +5,19 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.nurkiewicz.asyncretry.RetryExecutor;
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import pl.devoxx.aggregatr.aggregation.model.Ingredient;
 import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
-import rx.Observable;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,17 +51,22 @@ class IngredientsAggregator {
         return "ingredients." + ingredientType.toString().toLowerCase();
     }
 
-    @Async
     Ingredients fetchIngredients() {
-        Observable.from(ingredientsProperties.getListOfServiceNames())
+        final List<ListenableFuture<Ingredient>> futures = ingredientsProperties
+                .getListOfServiceNames()
+                .stream()
                 .map(ingredientHarvester::harvest)
-                .flatMap(Observable::from)
-                .forEach(ingredient -> {
-                    int quantity = Optional.ofNullable(DATABASE.getIfPresent(ingredient.type)).orElse(0);
-                    DATABASE.put(ingredient.type, quantity + ingredient.quantity);
-                    meters.get(ingredient.type).mark(ingredient.quantity);
-                });
+                .collect(Collectors.toList());
+        final ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
+        final List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
+        allIngredients.forEach(this::updateIngredientCache);
         return getIngredientsStatus();
+    }
+
+    private void updateIngredientCache(Ingredient ingredient) {
+        int quantity = Optional.ofNullable(DATABASE.getIfPresent(ingredient.type)).orElse(0);
+        DATABASE.put(ingredient.type, quantity + ingredient.quantity);
+        meters.get(ingredient.type).mark(ingredient.quantity);
     }
 
     private Ingredients getIngredientsStatus() {

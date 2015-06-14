@@ -78,7 +78,6 @@ dependencies {
     compile 'org.hibernate:hibernate-validator'
     compile "org.aspectj:aspectjrt"
     compile "com.ofg:micro-infra-spring-boot-starter:$microInfraSpringVersion"
-    compile 'io.reactivex:rxjava:1.0.12'
     compile 'org.projectlombok:lombok:1.16.4'
 
     runtime 'cglib:cglib-nodep:3.1'
