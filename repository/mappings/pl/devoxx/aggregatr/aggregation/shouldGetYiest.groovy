@@ -6,16 +6,13 @@ io.codearte.accurest.dsl.GroovyDsl.make {
             header 'Content-Type': 'application/vnd.pl.devoxx.aggregatr.v1+json'
         }
         body('''
-            { "items" : ["MALT","WATER","HOP","YIEST"] }
+            { "items" : ["YIEST"] }
         ''')
     }
     response {
         status 200
         body(
             ingredients: [
-                    [type: 'MALT', quantity: 200],
-                    [type: 'WATER', quantity: 200],
-                    [type: 'HOP', quantity: 200],
                     [type: 'YIEST', quantity: 200]
             ]
         )

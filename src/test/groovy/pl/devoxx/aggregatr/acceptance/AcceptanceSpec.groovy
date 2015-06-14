@@ -1,12 +1,12 @@
 package pl.devoxx.aggregatr.acceptance
-
 import groovy.json.JsonSlurper
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MvcResult
+import pl.devoxx.aggregatr.aggregation.model.Version
 import pl.devoxx.aggregatr.base.MicroserviceMvcWiremockSpec
 
 import static java.net.URI.create
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 
 @ContextConfiguration
@@ -20,7 +20,11 @@ class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
     }
 
     private MvcResult getting_ingredients() {
-        return mockMvc.perform(get(create('/ingredients'))).andDo(print()).andReturn()
+        return mockMvc.perform(post(create('/ingredients'))
+                .header('Content-Type', Version.V1)
+                .content('{"items":["WATER","HOP","YIEST","MALT"]}'))
+                .andDo(print())
+                .andReturn()
     }
 
     private void aggregated_ingredients_are_present(MvcResult result) {
