@@ -11,9 +11,13 @@ class AggregationConfiguration {
     @Bean
     IngredientsAggregator ingredientsAggregator(ServiceRestClient serviceRestClient,
                                                 RetryExecutor retryExecutor,
-                                                IngredientsProperties ingredientsProperties,
                                                 MetricRegistry metricRegistry) {
-        return new IngredientsAggregator(serviceRestClient, retryExecutor, ingredientsProperties, metricRegistry);
+        return new IngredientsAggregator(serviceRestClient, retryExecutor, ingredientsProperties(), metricRegistry, ingredientWarehouse());
+    }
+
+    @Bean
+    IngredientWarehouse ingredientWarehouse() {
+        return new IngredientWarehouse();
     }
 
     @Bean

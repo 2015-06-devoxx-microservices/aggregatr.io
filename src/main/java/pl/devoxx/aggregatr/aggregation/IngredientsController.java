@@ -11,7 +11,7 @@ import pl.devoxx.aggregatr.aggregation.model.Order;
 import pl.devoxx.aggregatr.aggregation.model.Version;
 
 @RestController
-@RequestMapping(value = "/ingredients", consumes = Version.V1, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/ingredients", consumes = Version.AGGREGATOR_V1, produces = MediaType.APPLICATION_JSON_VALUE)
 public class IngredientsController {
 
     private final IngredientsAggregator ingredientsAggregator;
