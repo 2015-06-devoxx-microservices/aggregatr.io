@@ -1,8 +1,11 @@
 package pl.devoxx.aggregatr.aggregation.model;
 
+import lombok.Data;
+
+@Data
 public class Ingredient {
-    public IngredientType type;
-    public Integer quantity;
+    private IngredientType type;
+    private Integer quantity;
 
     public Ingredient(IngredientType type, Integer quantity) {
         this.type = type;
