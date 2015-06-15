@@ -27,7 +27,7 @@ class DojrzewatrUpdater {
 
     Ingredients updateIfLimitReached(Ingredients ingredients) {
         if (ingredientsMatchTheThreshold(ingredients)) {
-            notifyDojrzewatr();
+            notifyDojrzewatr(ingredients);
             updateDatabaseStatus();
         }
         return ingredientWarehouse.getCurrentState();
@@ -39,13 +39,13 @@ class DojrzewatrUpdater {
         return allIngredientsPresent && allIngredientsOverThreshold;
     }
 
-    private void notifyDojrzewatr() {
+    private void notifyDojrzewatr(Ingredients ingredients) {
         serviceRestClient.forService("dojrzewatr")
                 .retryUsing(retryExecutor)
                 .post()
                 .withCircuitBreaker(withGroupKey(asKey("dojrzewatr_notification")))
                 .onUrl("/brew")
-                .withoutBody()
+                .body(ingredients)
                 .withHeaders().contentType(Version.DOJRZEWATR_V1)
                 .andExecuteFor()
                 .ignoringResponseAsync();
