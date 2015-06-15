@@ -11,7 +11,8 @@ before_script:
  - "export JAVA_OPTS=-Xmx512m"
 
 script:
-- ./gradlew clean build --stacktrace -Dstubrunner.skip-local-repo=true
+- git clone https://github.com/2015-06-devoxx-microservices/dojrzewatr.io.git && ./dojrzewatr.io/gradlew clean build publishToMavenLocal -x test
+- ./gradlew clean build --stacktrace
 
 env:
 - TERM=dumb
