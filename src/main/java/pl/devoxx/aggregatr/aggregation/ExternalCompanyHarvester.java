@@ -30,7 +30,7 @@ class ExternalCompanyHarvester {
                     log.error("Can't connect to {}", url);
                     return "";
                 })
-                .onUrl(ingredientsProperties.getRootUrl() + url)
+                .onUrl(ingredientsProperties.getRootUrl() + "/" + url)
                 .andExecuteFor()
                 .anObject()
                 .ofTypeAsync(Ingredient.class);

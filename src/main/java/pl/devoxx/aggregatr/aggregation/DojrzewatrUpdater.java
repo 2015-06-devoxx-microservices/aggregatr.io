@@ -5,6 +5,7 @@ import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
 import lombok.extern.slf4j.Slf4j;
 import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
+import pl.devoxx.aggregatr.aggregation.model.Version;
 
 import static com.netflix.hystrix.HystrixCommand.Setter.withGroupKey;
 import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
@@ -24,11 +25,12 @@ class DojrzewatrUpdater {
         this.ingredientWarehouse = ingredientWarehouse;
     }
 
-    void updateIfLimitReached(Ingredients ingredients) {
+    Ingredients updateIfLimitReached(Ingredients ingredients) {
         if (ingredientsMatchTheThreshold(ingredients)) {
             notifyDojrzewatr();
             updateDatabaseStatus();
         }
+        return ingredientWarehouse.getCurrentState();
     }
 
     private boolean ingredientsMatchTheThreshold(Ingredients ingredients) {
@@ -41,12 +43,10 @@ class DojrzewatrUpdater {
         serviceRestClient.forService("dojrzewatr")
                 .retryUsing(retryExecutor)
                 .post()
-                .withCircuitBreaker(withGroupKey(asKey("dojrzewatr_notification")), () -> {
-                    log.error("Can't connect to dojrzewatr");
-                    return "";
-                })
+                .withCircuitBreaker(withGroupKey(asKey("dojrzewatr_notification")))
                 .onUrl("/brew")
-                .body("")
+                .withoutBody()
+                .withHeaders().contentType(Version.DOJRZEWATR_V1)
                 .andExecuteFor()
                 .ignoringResponseAsync();
     }

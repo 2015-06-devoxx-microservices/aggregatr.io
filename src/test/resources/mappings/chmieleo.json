@@ -8,6 +8,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "body": "{ \"type\": \"HOP\", \"quantity\": 50 }"
+    "body": "{ \"type\": \"HOP\", \"quantity\": 1000 }"
   }
 }

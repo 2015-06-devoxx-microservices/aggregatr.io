@@ -1,22 +1,18 @@
 package pl.devoxx.aggregatr.base
+
 import com.ofg.infrastructure.base.MvcWiremockIntegrationSpec
-import com.ofg.infrastructure.discovery.ServiceConfigurationResolver
-import com.ofg.infrastructure.discovery.web.HttpMockServer
-import com.ofg.infrastructure.stub.Stubs
 import com.ofg.infrastructure.web.correlationid.CorrelationIdFilter
-import com.ofg.stub.StubRunning
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.SpringApplicationContextLoader
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.*
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder
 import pl.devoxx.aggregatr.Application
+import pl.devoxx.aggregatr.aggregation.ExcludedForIntegrationTests
+import pl.devoxx.aggregatr.aggregation.IngredientsProperties
 
-@ContextConfiguration(classes = [Application, Config], loader = SpringApplicationContextLoader, inheritLocations = false)
+@ContextConfiguration(classes = [Config], loader = SpringApplicationContextLoader)
 class MicroserviceMvcWiremockSpec extends MvcWiremockIntegrationSpec {
-
-    @Autowired HttpMockServer httpMockServer
 
     @Override
     protected void configureMockMvcBuilder(ConfigurableMockMvcBuilder mockMvcBuilder) {
@@ -25,16 +21,15 @@ class MicroserviceMvcWiremockSpec extends MvcWiremockIntegrationSpec {
     }
 
     @Configuration
+    @ComponentScan(excludeFilters = [@ComponentScan.Filter(value = ExcludedForIntegrationTests, type = FilterType.ANNOTATION)])
+    @Import(Application)
     static class Config {
 
-        @Bean(destroyMethod = 'shutdownServer', initMethod = "start")
-        HttpMockServer httpMockServer() {
-            return new HttpMockServer()
-        }
-
         @Bean
-        Stubs stubs(ServiceConfigurationResolver serviceConfigurationResolver, StubRunning stubRunning) {
-            return new Stubs(serviceConfigurationResolver, stubRunning)
+        IngredientsProperties ingredientsProperties(@Value("#{'http://localhost:' + @httpMockServer.port()}") String rootUrl) {
+            IngredientsProperties ingredientsProperties = new IngredientsProperties();
+            ingredientsProperties.setRootUrl(rootUrl);
+            return ingredientsProperties;
         }
 
     }

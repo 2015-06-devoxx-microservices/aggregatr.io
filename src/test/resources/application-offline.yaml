@@ -1,0 +1,8 @@
+graphite.host: localhost
+
+stubrunner.stubs:
+  repository.root: "file://~/.m2/"
+
+stubrunner:
+  work-offline: true
+  use-microservice-definitions: true

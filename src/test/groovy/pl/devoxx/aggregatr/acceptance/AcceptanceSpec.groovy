@@ -1,5 +1,6 @@
 package pl.devoxx.aggregatr.acceptance
 import groovy.json.JsonSlurper
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MvcResult
 import pl.devoxx.aggregatr.aggregation.model.Version
@@ -10,9 +11,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 
 @ContextConfiguration
+@ActiveProfiles(['test', 'offline'])
 class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
 
-    def 'should call external services to aggregate ingredients'() {
+    def 'should return empty warehouse after retrieving threshold amount of ingredients from external services'() {
         when:
             MvcResult result = getting_ingredients()
         then:
@@ -33,10 +35,10 @@ class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
         Map expectedResult = new JsonSlurper().parseText('''
                 {
                     "ingredients": [
-                            {"type":"MALT","quantity":200},
-                            {"type":"WATER","quantity":1000},
-                            {"type":"HOP","quantity":50},
-                            {"type":"YIEST","quantity":100}
+                            {"type":"MALT","quantity":0},
+                            {"type":"WATER","quantity":0},
+                            {"type":"HOP","quantity":0},
+                            {"type":"YIEST","quantity":0}
                         ]
                 }
             ''')

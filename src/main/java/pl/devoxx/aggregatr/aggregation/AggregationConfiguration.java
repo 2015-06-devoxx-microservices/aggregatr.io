@@ -21,6 +21,7 @@ class AggregationConfiguration {
     }
 
     @Bean
+    @ExcludedForIntegrationTests
     IngredientsProperties ingredientsProperties() {
         return new IngredientsProperties();
     }

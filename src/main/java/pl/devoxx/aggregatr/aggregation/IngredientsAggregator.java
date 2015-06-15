@@ -56,8 +56,7 @@ class IngredientsAggregator {
         List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
         allIngredients.forEach(this::updateIngredientCache);
         Ingredients ingredients = getIngredientsStatus();
-        dojrzewatrUpdater.updateIfLimitReached(ingredients);
-        return ingredients;
+        return dojrzewatrUpdater.updateIfLimitReached(ingredients);
     }
 
     private void updateIngredientCache(Ingredient ingredient) {
