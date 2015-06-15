@@ -21,7 +21,7 @@ class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
 
     private MvcResult getting_ingredients() {
         return mockMvc.perform(post(create('/ingredients'))
-                .header('Content-Type', Version.V1)
+                .header('Content-Type', Version.AGGREGATOR_V1)
                 .content('{"items":["WATER","HOP","YIEST","MALT"]}'))
                 .andDo(print())
                 .andReturn()

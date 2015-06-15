@@ -9,36 +9,34 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.nurkiewicz.asyncretry.RetryExecutor;
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import pl.devoxx.aggregatr.aggregation.model.Ingredient;
 import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
 import pl.devoxx.aggregatr.aggregation.model.Order;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.netflix.hystrix.HystrixCommand.Setter.withGroupKey;
-import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
-
+@Slf4j
 class IngredientsAggregator {
 
     private static final Cache<IngredientType, Integer> DATABASE = CacheBuilder.newBuilder().build();
 
-    private final IngredientHarvester ingredientHarvester;
+    private final IngredientsHarvester ingredientsHarvester;
     private final IngredientsProperties ingredientsProperties;
     private final Map<IngredientType, Meter> meters;
+    private final DojrzewatrUpdater dojrzewatrUpdater;
 
     IngredientsAggregator(ServiceRestClient serviceRestClient,
                           RetryExecutor retryExecutor,
                           IngredientsProperties ingredientsProperties,
                           MetricRegistry metricRegistry) {
-        this.ingredientHarvester = new IngredientHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
+        this.ingredientsHarvester = new IngredientsHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
+        this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties, DATABASE);
         this.ingredientsProperties = ingredientsProperties;
         this.meters = ImmutableMap.of(
                 IngredientType.WATER, metricRegistry.meter(getMetricName(IngredientType.WATER)),
@@ -56,12 +54,14 @@ class IngredientsAggregator {
         List<ListenableFuture<Ingredient>> futures = ingredientsProperties
                 .getListOfServiceNames(order)
                 .stream()
-                .map(ingredientHarvester::harvest)
+                .map(ingredientsHarvester::harvest)
                 .collect(Collectors.toList());
         ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
         List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
         allIngredients.forEach(this::updateIngredientCache);
-        return getIngredientsStatus();
+        Ingredients ingredients = getIngredientsStatus();
+        dojrzewatrUpdater.updateIfLimitReached(ingredients);
+        return ingredients;
     }
 
     private void updateIngredientCache(Ingredient ingredient) {
@@ -78,34 +78,4 @@ class IngredientsAggregator {
                 .collect(Collectors.toList()));
     }
 
-    private static class IngredientHarvester {
-
-        private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-        private final ServiceRestClient serviceRestClient;
-        private final RetryExecutor retryExecutor;
-        private IngredientsProperties ingredientsProperties;
-
-        IngredientHarvester(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, IngredientsProperties ingredientsProperties) {
-            this.serviceRestClient = serviceRestClient;
-            this.retryExecutor = retryExecutor;
-            this.ingredientsProperties = ingredientsProperties;
-        }
-
-        ListenableFuture<Ingredient> harvest(String url) {
-            return serviceRestClient.forExternalService()
-                    .retryUsing(retryExecutor)
-                    .get()
-                    .withCircuitBreaker(withGroupKey(asKey(url)), () -> {
-                        LOG.error("Can't connect to {}", url);
-                        return "";
-                    })
-                    .withCircuitBreaker(withGroupKey(asKey(url)))
-                    .onUrl(ingredientsProperties.getRootUrl() + url)
-                    .andExecuteFor()
-                    .anObject()
-                    .ofTypeAsync(Ingredient.class);
-        }
-
-    }
 }
