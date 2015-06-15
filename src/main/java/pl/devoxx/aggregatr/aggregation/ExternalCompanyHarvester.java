@@ -10,13 +10,13 @@ import static com.netflix.hystrix.HystrixCommand.Setter.withGroupKey;
 import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
 
 @Slf4j
-class IngredientsHarvester {
+class ExternalCompanyHarvester {
 
     private final ServiceRestClient serviceRestClient;
     private final RetryExecutor retryExecutor;
     private IngredientsProperties ingredientsProperties;
 
-    IngredientsHarvester(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, IngredientsProperties ingredientsProperties) {
+    ExternalCompanyHarvester(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, IngredientsProperties ingredientsProperties) {
         this.serviceRestClient = serviceRestClient;
         this.retryExecutor = retryExecutor;
         this.ingredientsProperties = ingredientsProperties;

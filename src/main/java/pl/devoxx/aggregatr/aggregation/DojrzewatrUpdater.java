@@ -1,13 +1,10 @@
 package pl.devoxx.aggregatr.aggregation;
 
-import com.google.common.cache.Cache;
 import com.nurkiewicz.asyncretry.RetryExecutor;
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
 import lombok.extern.slf4j.Slf4j;
 import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
-
-import java.util.Arrays;
 
 import static com.netflix.hystrix.HystrixCommand.Setter.withGroupKey;
 import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
@@ -18,13 +15,13 @@ class DojrzewatrUpdater {
     private final ServiceRestClient serviceRestClient;
     private final RetryExecutor retryExecutor;
     private final IngredientsProperties ingredientsProperties;
-    private final Cache<IngredientType, Integer> database;
+    private final IngredientWarehouse ingredientWarehouse;
 
-    public DojrzewatrUpdater(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, IngredientsProperties ingredientsProperties, Cache<IngredientType, Integer> database) {
+    public DojrzewatrUpdater(ServiceRestClient serviceRestClient, RetryExecutor retryExecutor, IngredientsProperties ingredientsProperties, IngredientWarehouse ingredientWarehouse) {
         this.serviceRestClient = serviceRestClient;
         this.retryExecutor = retryExecutor;
         this.ingredientsProperties = ingredientsProperties;
-        this.database = database;
+        this.ingredientWarehouse = ingredientWarehouse;
     }
 
     void updateIfLimitReached(Ingredients ingredients) {
@@ -36,7 +33,7 @@ class DojrzewatrUpdater {
 
     private boolean ingredientsMatchTheThreshold(Ingredients ingredients) {
         boolean allIngredientsPresent = ingredients.ingredients.size() == IngredientType.values().length;
-        boolean allIngredientsOverThreshold = ingredients.ingredients.stream().allMatch(ingredient -> ingredient.quantity >= ingredientsProperties.getThreshold());
+        boolean allIngredientsOverThreshold = ingredients.ingredients.stream().allMatch(ingredient -> ingredient.getQuantity() >= ingredientsProperties.getThreshold());
         return allIngredientsPresent && allIngredientsOverThreshold;
     }
 
@@ -48,14 +45,13 @@ class DojrzewatrUpdater {
                     log.error("Can't connect to dojrzewatr");
                     return "";
                 })
-                .onUrl("/bottle")
+                .onUrl("/brew")
                 .body("")
                 .andExecuteFor()
                 .ignoringResponseAsync();
     }
 
     private void updateDatabaseStatus() {
-        database.getAllPresent(Arrays.asList(IngredientType.values()))
-                .forEach((ingredientType, integer) -> database.put(ingredientType, integer - ingredientsProperties.getThreshold()));
+        ingredientWarehouse.clearWarehouseByThreshold(ingredientsProperties.getThreshold());
     }
 }

@@ -2,8 +2,6 @@ package pl.devoxx.aggregatr.aggregation;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -15,28 +13,26 @@ import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
 import pl.devoxx.aggregatr.aggregation.model.Order;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 class IngredientsAggregator {
 
-    private static final Cache<IngredientType, Integer> DATABASE = CacheBuilder.newBuilder().build();
-
-    private final IngredientsHarvester ingredientsHarvester;
+    private final ExternalCompanyHarvester externalCompanyHarvester;
     private final IngredientsProperties ingredientsProperties;
     private final Map<IngredientType, Meter> meters;
     private final DojrzewatrUpdater dojrzewatrUpdater;
+    private final IngredientWarehouse ingredientWarehouse;
 
     IngredientsAggregator(ServiceRestClient serviceRestClient,
                           RetryExecutor retryExecutor,
                           IngredientsProperties ingredientsProperties,
-                          MetricRegistry metricRegistry) {
-        this.ingredientsHarvester = new IngredientsHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
-        this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties, DATABASE);
+                          MetricRegistry metricRegistry, IngredientWarehouse ingredientWarehouse) {
+        this.ingredientWarehouse = ingredientWarehouse;
+        this.externalCompanyHarvester = new ExternalCompanyHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
+        this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties, ingredientWarehouse);
         this.ingredientsProperties = ingredientsProperties;
         this.meters = ImmutableMap.of(
                 IngredientType.WATER, metricRegistry.meter(getMetricName(IngredientType.WATER)),
@@ -54,7 +50,7 @@ class IngredientsAggregator {
         List<ListenableFuture<Ingredient>> futures = ingredientsProperties
                 .getListOfServiceNames(order)
                 .stream()
-                .map(ingredientsHarvester::harvest)
+                .map(externalCompanyHarvester::harvest)
                 .collect(Collectors.toList());
         ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
         List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
@@ -65,17 +61,12 @@ class IngredientsAggregator {
     }
 
     private void updateIngredientCache(Ingredient ingredient) {
-        int quantity = Optional.ofNullable(DATABASE.getIfPresent(ingredient.type)).orElse(0);
-        DATABASE.put(ingredient.type, quantity + ingredient.quantity);
-        meters.get(ingredient.type).mark(ingredient.quantity);
+        ingredientWarehouse.addIngredient(ingredient);
+        meters.get(ingredient.getType()).mark(ingredient.getQuantity());
     }
 
     private Ingredients getIngredientsStatus() {
-        return new Ingredients(DATABASE.getAllPresent(Arrays.asList(IngredientType.values()))
-                .entrySet()
-                .stream()
-                .map((entry) -> new Ingredient(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList()));
+        return ingredientWarehouse.getCurrentState();
     }
 
 }
