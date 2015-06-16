@@ -20,7 +20,7 @@ public class IngredientsProperties {
             .put(IngredientType.HOP, "chmieleo")
             .put(IngredientType.YIEST, "drozdzeo")
             .build();
-    private String rootUrl = "http://localhost:8030/";
+    private String rootUrl = "http://localhost:8030";
     private Integer threshold = 1000;
 
     public List<String> getListOfServiceNames(Order order) {
