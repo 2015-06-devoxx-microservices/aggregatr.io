@@ -28,7 +28,7 @@ class ExternalCompanyHarvester {
                 .get()
                 .withCircuitBreaker(withGroupKey(asKey(url)), () -> {
                     log.error("Can't connect to {}", url);
-                    return "";
+                    return null;
                 })
                 .onUrl(ingredientsProperties.getRootUrl() + "/" + url)
                 .andExecuteFor()

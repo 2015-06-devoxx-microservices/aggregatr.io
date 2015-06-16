@@ -54,7 +54,9 @@ class IngredientsAggregator {
                 .collect(Collectors.toList());
         ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
         List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
-        allIngredients.forEach(this::updateIngredientCache);
+        allIngredients.stream()
+                .filter((ingredient -> ingredient != null))
+                .forEach(this::updateIngredientCache);
         Ingredients ingredients = getIngredientsStatus();
         return dojrzewatrUpdater.updateIfLimitReached(ingredients);
     }
