@@ -123,10 +123,10 @@ artifacts {
 publishing {
     repositories {
         maven {
-            url getProperty('mavenRepoUrl')
+            url getProp('mavenRepoUrl')
             credentials {
-                username getProperty('mavenUser')
-                password getProperty('mavenPassword')
+                username getProp('mavenUser')
+                password getProp('mavenPassword')
             }
         }
     }
@@ -143,4 +143,8 @@ publishing {
             }
         }
     }
+}
+
+String getProp(String propName) {
+    return getProperty(propName) ?: System.properties[propName1]
 }
