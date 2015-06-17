@@ -21,7 +21,7 @@ ext {
     versionPrefix = "CD"
     buildNrLoc = project.hasProperty('buildNr') ? "${buildNr}" : "000"
     currentVersion = "${versionPrefix}-${buildNrLoc}"
-    projectGroupId = 'pl.devoxx'
+    projectGroupId = groupId
 
     contractsDir = file("${project.rootDir}/repository/mappings/")
     wiremockStubsOutputDirRoot = file("${project.buildDir}/production/${project.name}-stubs/")
