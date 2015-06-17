@@ -146,5 +146,5 @@ publishing {
 }
 
 String getProp(String propName) {
-    return getProperty(propName) ?: System.properties[propName1]
+    return getProperty(propName) ?: System.properties[propName]
 }
