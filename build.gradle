@@ -18,9 +18,8 @@ apply plugin: 'com.ofg.uptodate'
 apply plugin: 'accurest'
 
 ext {
-    versionPrefix = "CD"
-    buildNrLoc = project.hasProperty('buildNr') ? "${buildNr}" : "000"
-    currentVersion = "${versionPrefix}-${buildNrLoc}"
+    versionPrefix = "CD-"
+    buildNrLoc = project.hasProperty('buildNr') ? "${versionPrefix}${buildNr}" : "${versionPrefix}000"
     projectGroupId = groupId
 
     contractsDir = file("${project.rootDir}/repository/mappings/")
@@ -29,7 +28,7 @@ ext {
 }
 
 group = projectGroupId
-version = currentVersion
+version = buildNrLoc
 
 sourceCompatibility = '1.8'
 
