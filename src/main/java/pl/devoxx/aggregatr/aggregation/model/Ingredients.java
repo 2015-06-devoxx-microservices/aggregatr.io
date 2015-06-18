@@ -1,9 +1,11 @@
 package pl.devoxx.aggregatr.aggregation.model;
 
 import com.google.common.collect.Lists;
+import lombok.ToString;
 
 import java.util.List;
 
+@ToString
 public class Ingredients {
 
     public Ingredients() {

@@ -27,10 +27,13 @@ class DojrzewatrUpdater {
 
     Ingredients updateIfLimitReached(Ingredients ingredients) {
         if (ingredientsMatchTheThreshold(ingredients)) {
+            log.info("Ingredients match the threshold - time to notify dojrzewatr!");
             notifyDojrzewatr(ingredients);
             updateDatabaseStatus();
         }
-        return ingredientWarehouse.getCurrentState();
+        Ingredients currentState = ingredientWarehouse.getCurrentState();
+        log.info("Current state of ingredients is {}", currentState);
+        return currentState;
     }
 
     private boolean ingredientsMatchTheThreshold(Ingredients ingredients) {
