@@ -1,1 +1,2 @@
 metrics.path.app: aggregatr
+rest.api.urls.to.list: .*ingredients.*
