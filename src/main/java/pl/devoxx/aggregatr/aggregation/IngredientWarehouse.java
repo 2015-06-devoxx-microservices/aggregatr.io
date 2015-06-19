@@ -30,6 +30,10 @@ class IngredientWarehouse {
         return Optional.ofNullable(DATABASE.getIfPresent(ingredient.getType())).orElse(0);
     }
 
+    public Integer getIngredientCountOfType(IngredientType ingredientType) {
+        return DATABASE.getIfPresent(ingredientType);
+    }
+
     public Ingredients getCurrentState() {
         return new Ingredients(DATABASE.getAllPresent(Arrays.asList(IngredientType.values()))
                 .entrySet()

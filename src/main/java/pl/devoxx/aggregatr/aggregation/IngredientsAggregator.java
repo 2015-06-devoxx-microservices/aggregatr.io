@@ -1,6 +1,7 @@
 package pl.devoxx.aggregatr.aggregation;
 
-import com.codahale.metrics.Meter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
@@ -22,7 +23,7 @@ class IngredientsAggregator {
 
     private final ExternalCompanyHarvester externalCompanyHarvester;
     private final IngredientsProperties ingredientsProperties;
-    private final Map<IngredientType, Meter> meters;
+    private final Map<IngredientType, Metric> meters;
     private final DojrzewatrUpdater dojrzewatrUpdater;
     private final IngredientWarehouse ingredientWarehouse;
 
@@ -35,10 +36,14 @@ class IngredientsAggregator {
         this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties, ingredientWarehouse);
         this.ingredientsProperties = ingredientsProperties;
         this.meters = ImmutableMap.of(
-                IngredientType.WATER, metricRegistry.meter(getMetricName(IngredientType.WATER)),
-                IngredientType.HOP, metricRegistry.meter(getMetricName(IngredientType.HOP)),
-                IngredientType.MALT, metricRegistry.meter(getMetricName(IngredientType.MALT)),
-                IngredientType.YIEST, metricRegistry.meter(getMetricName(IngredientType.YIEST))
+                IngredientType.WATER, metricRegistry.register(getMetricName(IngredientType.WATER),
+                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.WATER)),
+                IngredientType.HOP, metricRegistry.register(getMetricName(IngredientType.HOP),
+                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.HOP)),
+                IngredientType.MALT, metricRegistry.register(getMetricName(IngredientType.MALT),
+                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.MALT)),
+                IngredientType.YIEST, metricRegistry.register(getMetricName(IngredientType.YIEST),
+                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.YIEST))
         );
     }
 
@@ -63,7 +68,6 @@ class IngredientsAggregator {
 
     private void updateIngredientCache(Ingredient ingredient) {
         ingredientWarehouse.addIngredient(ingredient);
-        meters.get(ingredient.getType()).mark(ingredient.getQuantity());
     }
 
     private Ingredients getIngredientsStatus() {
