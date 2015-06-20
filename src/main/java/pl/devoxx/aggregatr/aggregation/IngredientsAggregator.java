@@ -9,6 +9,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.nurkiewicz.asyncretry.RetryExecutor;
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import pl.devoxx.aggregatr.aggregation.model.Ingredient;
 import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
@@ -18,20 +20,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.netflix.hystrix.HystrixCommand.Setter.withGroupKey;
+import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
+
 @Slf4j
+@Component
 class IngredientsAggregator {
 
-    private final ExternalCompanyHarvester externalCompanyHarvester;
     private final IngredientsProperties ingredientsProperties;
     private final DojrzewatrUpdater dojrzewatrUpdater;
+    private final ServiceRestClient serviceRestClient;
+    private final RetryExecutor retryExecutor;
     private final IngredientWarehouse ingredientWarehouse;
 
+    @Autowired
     IngredientsAggregator(ServiceRestClient serviceRestClient,
                           RetryExecutor retryExecutor,
                           IngredientsProperties ingredientsProperties,
                           MetricRegistry metricRegistry, IngredientWarehouse ingredientWarehouse) {
+        this.serviceRestClient = serviceRestClient;
+        this.retryExecutor = retryExecutor;
         this.ingredientWarehouse = ingredientWarehouse;
-        this.externalCompanyHarvester = new ExternalCompanyHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
         this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties, ingredientWarehouse);
         this.ingredientsProperties = ingredientsProperties;
         setupMeters(metricRegistry);
@@ -56,23 +65,28 @@ class IngredientsAggregator {
         List<ListenableFuture<Ingredient>> futures = ingredientsProperties
                 .getListOfServiceNames(order)
                 .stream()
-                .map(externalCompanyHarvester::harvest)
+                .map(this::harvest)
                 .collect(Collectors.toList());
         ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
         List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
         allIngredients.stream()
                 .filter((ingredient -> ingredient != null))
-                .forEach(this::updateIngredientCache);
-        Ingredients ingredients = getIngredientsStatus();
+                .forEach(ingredientWarehouse::addIngredient);
+        Ingredients ingredients = ingredientWarehouse.getCurrentState();
         return dojrzewatrUpdater.updateIfLimitReached(ingredients);
     }
 
-    private void updateIngredientCache(Ingredient ingredient) {
-        ingredientWarehouse.addIngredient(ingredient);
+    ListenableFuture<Ingredient> harvest(String service) {
+        return serviceRestClient.forExternalService()
+                .retryUsing(retryExecutor)
+                .get()
+                .withCircuitBreaker(withGroupKey(asKey(service)), () -> {
+                    log.error("Can't connect to {}", service);
+                    return null;
+                })
+                .onUrl(ingredientsProperties.getRootUrl() + "/" + service)
+                .andExecuteFor()
+                .anObject()
+                .ofTypeAsync(Ingredient.class);
     }
-
-    private Ingredients getIngredientsStatus() {
-        return ingredientWarehouse.getCurrentState();
-    }
-
 }

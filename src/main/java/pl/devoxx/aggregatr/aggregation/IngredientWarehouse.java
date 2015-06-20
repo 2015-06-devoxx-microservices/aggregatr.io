@@ -23,8 +23,8 @@ class IngredientWarehouse {
         DATABASE.put(ingredient.getType(), currentQuantity + ingredient.getQuantity());
     }
 
-    public void clearWarehouseByThreshold(Integer threshold) {
-        DATABASE.forEach((ingredientType, integer) -> DATABASE.put(ingredientType, integer - threshold));
+    public void useIngredients(Integer amount) {
+        DATABASE.forEach((ingredientType, integer) -> DATABASE.put(ingredientType, integer - amount));
     }
 
     public Integer getIngredientCountOfType(IngredientType ingredientType) {

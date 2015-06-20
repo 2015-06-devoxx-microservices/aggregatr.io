@@ -13,23 +13,12 @@ import java.io.IOException;
 
 @Configuration
 class AggregationConfiguration {
-    @Bean
-    IngredientsAggregator ingredientsAggregator(ServiceRestClient serviceRestClient,
-                                                RetryExecutor retryExecutor,
-                                                MetricRegistry metricRegistry,
-                                                IngredientsProperties ingredientsProperties) {
-        return new IngredientsAggregator(serviceRestClient, retryExecutor, ingredientsProperties, metricRegistry, ingredientWarehouse());
-    }
-
-    @Bean
-    IngredientWarehouse ingredientWarehouse() {
-        return new IngredientWarehouse();
-    }
 
     @Bean
     IngredientsProperties ingredientsProperties(@Value("${ingredients.rootUrl:}") String rootUrl) {
         IngredientsProperties ingredientsProperties = new IngredientsProperties();
-        ingredientsProperties.setRootUrl(StringUtils.defaultIfBlank(rootUrl, "http://localhost:" + String.valueOf(SocketUtils.findAvailableTcpPort())));
+        ingredientsProperties.setRootUrl(StringUtils.defaultIfBlank(rootUrl,
+                "http://localhost:" + String.valueOf(SocketUtils.findAvailableTcpPort())));
         return ingredientsProperties;
     }
 

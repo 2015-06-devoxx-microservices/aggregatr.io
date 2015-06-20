@@ -1,5 +1,7 @@
 https://gist.github.com/wybczu/45cd669120566083cb6a
 
+0) welcome and slides
+
 1) ingredients
 
 * We got accurest API
@@ -27,6 +29,5 @@ https://gist.github.com/wybczu/45cd669120566083cb6a
 3) metrics
 
 * gauge for ingredients
-* Metric for(?)
 * show grafana http://grafana.devoxx/#/dashboard/elasticsearch/Brewery
 * add alert on Seyrene (water > 5000)
