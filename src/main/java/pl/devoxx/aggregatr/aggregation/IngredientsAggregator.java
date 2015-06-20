@@ -28,7 +28,6 @@ import static com.netflix.hystrix.HystrixCommandGroupKey.Factory.asKey;
 class IngredientsAggregator {
 
     private final IngredientsProperties ingredientsProperties;
-    private final DojrzewatrUpdater dojrzewatrUpdater;
     private final ServiceRestClient serviceRestClient;
     private final RetryExecutor retryExecutor;
     private final IngredientWarehouse ingredientWarehouse;
@@ -40,8 +39,6 @@ class IngredientsAggregator {
         this.serviceRestClient = serviceRestClient;
         this.retryExecutor = retryExecutor;
         this.ingredientWarehouse = ingredientWarehouse;
-        this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties,
-                ingredientWarehouse);
         this.ingredientsProperties = ingredientsProperties;
     }
 
@@ -56,8 +53,7 @@ class IngredientsAggregator {
         allIngredients.stream()
                 .filter((ingredient -> ingredient != null))
                 .forEach(ingredientWarehouse::addIngredient);
-        Ingredients ingredients = ingredientWarehouse.getCurrentState();
-        return dojrzewatrUpdater.updateIfLimitReached(ingredients);
+        return ingredientWarehouse.getCurrentState();
     }
 
     ListenableFuture<Ingredient> harvest(String service) {
