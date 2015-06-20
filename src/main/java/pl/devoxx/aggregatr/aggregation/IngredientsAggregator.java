@@ -41,7 +41,8 @@ class IngredientsAggregator {
         this.serviceRestClient = serviceRestClient;
         this.retryExecutor = retryExecutor;
         this.ingredientWarehouse = ingredientWarehouse;
-        this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties, ingredientWarehouse);
+        this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties,
+                ingredientWarehouse);
         this.ingredientsProperties = ingredientsProperties;
         setupMeters(metricRegistry);
     }

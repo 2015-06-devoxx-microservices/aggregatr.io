@@ -17,10 +17,14 @@ class ExternalServicesStub implements Closeable {
         URI uri = URI.create(ingredientsProperties.getRootUrl());
         this.wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig()
                 .port(uri.getPort()));
-        wireMockServer.addStubMapping(StubMapping.buildFrom(IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/chmieleo.json"))));
-        wireMockServer.addStubMapping(StubMapping.buildFrom(IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/drozdzeo.json"))));
-        wireMockServer.addStubMapping(StubMapping.buildFrom(IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/slodeo.json"))));
-        wireMockServer.addStubMapping(StubMapping.buildFrom(IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/wodeo.json"))));
+        wireMockServer.addStubMapping(StubMapping.buildFrom(
+                IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/chmieleo.json"))));
+        wireMockServer.addStubMapping(StubMapping.buildFrom(
+                IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/drozdzeo.json"))));
+        wireMockServer.addStubMapping(StubMapping.buildFrom(
+                IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/slodeo.json"))));
+        wireMockServer.addStubMapping(StubMapping.buildFrom(
+                IOUtils.toString(ExternalServicesStub.class.getResourceAsStream("/mappings/wodeo.json"))));
     }
 
     void start() {
