@@ -1,4 +1,5 @@
 package pl.devoxx.aggregatr.acceptance
+
 import groovy.json.JsonSlurper
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
@@ -16,9 +17,9 @@ class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
 
     def 'should return empty warehouse after retrieving threshold amount of ingredients from external services'() {
         when:
-            MvcResult result = getting_ingredients()
+        MvcResult result = getting_ingredients()
         then:
-            aggregated_ingredients_are_present(result)
+        aggregated_ingredients_are_present(result)
     }
 
     private MvcResult getting_ingredients() {
@@ -42,7 +43,8 @@ class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
                         ]
                 }
             ''')
-       assert parsedResult == expectedResult
+        def sort = { a, b -> a.type.compareTo(b.type) }
+        assert parsedResult.ingredients.sort(sort) == expectedResult.ingredients.sort(sort)
     }
 
 }
