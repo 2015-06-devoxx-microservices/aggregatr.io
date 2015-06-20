@@ -36,30 +36,13 @@ class IngredientsAggregator {
     @Autowired
     IngredientsAggregator(ServiceRestClient serviceRestClient,
                           RetryExecutor retryExecutor,
-                          IngredientsProperties ingredientsProperties,
-                          MetricRegistry metricRegistry, IngredientWarehouse ingredientWarehouse) {
+                          IngredientsProperties ingredientsProperties, IngredientWarehouse ingredientWarehouse) {
         this.serviceRestClient = serviceRestClient;
         this.retryExecutor = retryExecutor;
         this.ingredientWarehouse = ingredientWarehouse;
         this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties,
                 ingredientWarehouse);
         this.ingredientsProperties = ingredientsProperties;
-        setupMeters(metricRegistry);
-    }
-
-    private void setupMeters(MetricRegistry metricRegistry) {
-        metricRegistry.register(getMetricName(IngredientType.WATER),
-                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.WATER));
-        metricRegistry.register(getMetricName(IngredientType.HOP),
-                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.HOP));
-        metricRegistry.register(getMetricName(IngredientType.MALT),
-                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.MALT));
-        metricRegistry.register(getMetricName(IngredientType.YIEST),
-                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.YIEST));
-    }
-
-    private String getMetricName(IngredientType ingredientType) {
-        return "ingredients." + ingredientType.toString().toLowerCase();
     }
 
     Ingredients fetchIngredients(Order order) {
