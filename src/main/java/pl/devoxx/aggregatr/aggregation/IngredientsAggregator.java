@@ -23,7 +23,6 @@ class IngredientsAggregator {
 
     private final ExternalCompanyHarvester externalCompanyHarvester;
     private final IngredientsProperties ingredientsProperties;
-    private final Map<IngredientType, Metric> meters;
     private final DojrzewatrUpdater dojrzewatrUpdater;
     private final IngredientWarehouse ingredientWarehouse;
 
@@ -35,16 +34,18 @@ class IngredientsAggregator {
         this.externalCompanyHarvester = new ExternalCompanyHarvester(serviceRestClient, retryExecutor, ingredientsProperties);
         this.dojrzewatrUpdater = new DojrzewatrUpdater(serviceRestClient, retryExecutor, ingredientsProperties, ingredientWarehouse);
         this.ingredientsProperties = ingredientsProperties;
-        this.meters = ImmutableMap.of(
-                IngredientType.WATER, metricRegistry.register(getMetricName(IngredientType.WATER),
-                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.WATER)),
-                IngredientType.HOP, metricRegistry.register(getMetricName(IngredientType.HOP),
-                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.HOP)),
-                IngredientType.MALT, metricRegistry.register(getMetricName(IngredientType.MALT),
-                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.MALT)),
-                IngredientType.YIEST, metricRegistry.register(getMetricName(IngredientType.YIEST),
-                        (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.YIEST))
-        );
+        setupMeters(metricRegistry);
+    }
+
+    private void setupMeters(MetricRegistry metricRegistry) {
+        metricRegistry.register(getMetricName(IngredientType.WATER),
+                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.WATER));
+        metricRegistry.register(getMetricName(IngredientType.HOP),
+                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.HOP));
+        metricRegistry.register(getMetricName(IngredientType.MALT),
+                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.MALT));
+        metricRegistry.register(getMetricName(IngredientType.YIEST),
+                (Gauge<Integer>) () -> ingredientWarehouse.getIngredientCountOfType(IngredientType.YIEST));
     }
 
     private String getMetricName(IngredientType ingredientType) {

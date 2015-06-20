@@ -8,34 +8,31 @@ import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 class IngredientWarehouse {
 
-    private static final Cache<IngredientType, Integer> DATABASE = CacheBuilder.newBuilder().build();
+    private static final Map<IngredientType, Integer> DATABASE = new ConcurrentHashMap<>();
 
     public void addIngredient(Ingredient ingredient) {
-        int currentQuantity = getCurrentQuantity(ingredient);
+        int currentQuantity = DATABASE.getOrDefault(ingredient.getType(), 0);
         DATABASE.put(ingredient.getType(), currentQuantity + ingredient.getQuantity());
     }
 
     public void clearWarehouseByThreshold(Integer threshold) {
-        DATABASE.getAllPresent(Arrays.asList(IngredientType.values()))
-                .forEach((ingredientType, integer) -> DATABASE.put(ingredientType, integer - threshold));
-    }
-
-    private int getCurrentQuantity(Ingredient ingredient) {
-        return Optional.ofNullable(DATABASE.getIfPresent(ingredient.getType())).orElse(0);
+        DATABASE.forEach((ingredientType, integer) -> DATABASE.put(ingredientType, integer - threshold));
     }
 
     public Integer getIngredientCountOfType(IngredientType ingredientType) {
-        return DATABASE.getIfPresent(ingredientType);
+        return DATABASE.getOrDefault(ingredientType, 0);
     }
 
     public Ingredients getCurrentState() {
-        return new Ingredients(DATABASE.getAllPresent(Arrays.asList(IngredientType.values()))
+        return new Ingredients(DATABASE
                 .entrySet()
                 .stream()
                 .map((entry) -> new Ingredient(entry.getKey(), entry.getValue()))
