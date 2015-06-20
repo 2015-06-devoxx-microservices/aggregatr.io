@@ -9,11 +9,11 @@ abstract class BaseMockMvcSpec extends Specification {
 
     protected static final int QUANTITY = 200
 
-    IngredientsAggregator ingredientsAggregator = Stub()
+//    IngredientsAggregator ingredientsAggregator = Stub()
 
     def setup() {
         setupMocks()
-        RestAssuredMockMvc.standaloneSetup(new IngredientsController(ingredientsAggregator))
+//        RestAssuredMockMvc.standaloneSetup(new IngredientsController(ingredientsAggregator))
     }
 
     void setupMocks() {
