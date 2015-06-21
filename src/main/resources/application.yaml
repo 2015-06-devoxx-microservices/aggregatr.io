@@ -1,8 +1,2 @@
 metrics.path.app: aggregatr
 rest.api.urls.to.list: .*ingredients.*
-stubrunner:
-  #skip-local-repo: false
-  #work-offline: true
-  use-microservice-definitions: true
-  stubs:
-    repository.root: "http://54.171.73.213:8081/nexus/content/repositories/releases/"

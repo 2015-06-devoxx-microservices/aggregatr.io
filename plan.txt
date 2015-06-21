@@ -2,29 +2,32 @@ https://gist.github.com/wybczu/45cd669120566083cb6a
 
 0) welcome and slides
 
-1) ingredients/order
+1) ingredients
 
-* Show accurest API
-    * Show model
-    * Show IngredientsProperties
-    * Show ExternalServicesStub
-* Show Controller
-* Show IngredientsWarehouse
-* Code IngredientsAggregator
-* Show on przentatr
-    * show hystrix dashboard
-    * show grafana with metrics
-    * show seyrene
-    * show slack #alerts
-    * show API swagger
-    * show alerts on phone
+* We got accurest API
+* Implement ORDER
+    * show wiremocks for słodeo/wodeo/chmieleo/drożdżeo
+    * make calls to via ServiceRestClient ^^
+        * hystrix
+    * return state
+    >> show prezentatr http://apps.devoxx:9093/
+        * show API with swagger
+    * start calling
+        * show changes in bars
+        * show hystrix console http://apps.devoxx:8090/hystrix-dashboard/
 
 2) dojrzewatr
 
-* dojrzewatr accurest API
-    * show/tell? about stubs from repo
-* add to microservices.json
-* call dojrzewatr (code)
+* Show dojrzewatr accurest API
+* Add dependency to microservice.json
+    * tell about automagical stubs in DEV/tests
+* call with ServiceRestClient
+    * hystrix async retry
 * call from prezentatr
-    * show full path
-    * show kibana with correlation id
+* show logstash -> CorrelationID sequence
+
+3) metrics
+
+* gauge for ingredients
+* show grafana http://grafana.devoxx/#/dashboard/elasticsearch/Brewery
+* add alert on Seyrene (water > 5000)
