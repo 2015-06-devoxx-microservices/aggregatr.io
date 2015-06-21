@@ -1,15 +1,11 @@
 package pl.devoxx.aggregatr.aggregation;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.springframework.stereotype.Service;
 import pl.devoxx.aggregatr.aggregation.model.Ingredient;
 import pl.devoxx.aggregatr.aggregation.model.IngredientType;
 import pl.devoxx.aggregatr.aggregation.model.Ingredients;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 

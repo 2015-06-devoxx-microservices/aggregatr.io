@@ -63,31 +63,12 @@ class IngredientsAggregator {
     }
 
     Ingredients fetchIngredients(Order order) {
-        List<ListenableFuture<Ingredient>> futures = ingredientsProperties
-                .getListOfServiceNames(order)
-                .stream()
-                .map(this::harvest)
-                .collect(Collectors.toList());
-        ListenableFuture<List<Ingredient>> allDoneFuture = Futures.allAsList(futures);
-        List<Ingredient> allIngredients = Futures.getUnchecked(allDoneFuture);
-        allIngredients.stream()
-                .filter((ingredient -> ingredient != null))
-                .forEach(ingredientWarehouse::addIngredient);
-        Ingredients ingredients = ingredientWarehouse.getCurrentState();
-        return dojrzewatrUpdater.updateIfLimitReached(ingredients);
+        // TODO fill me
+        return new Ingredients();
     }
 
     ListenableFuture<Ingredient> harvest(String service) {
-        return serviceRestClient.forExternalService()
-                .retryUsing(retryExecutor)
-                .get()
-                .withCircuitBreaker(withGroupKey(asKey(service)), () -> {
-                    log.error("Can't connect to {}", service);
-                    return null;
-                })
-                .onUrl(ingredientsProperties.getRootUrl() + "/" + service)
-                .andExecuteFor()
-                .anObject()
-                .ofTypeAsync(Ingredient.class);
+        // TODO fill me
+        return null;
     }
 }
