@@ -2,6 +2,7 @@
     "pl": {
         "this": "pl/devoxx/aggregatr",
         "dependencies" : {
+            "dojrzewatr": "pl/devoxx/dojrzewatr"
         }
     }
 }

@@ -74,7 +74,7 @@ class IngredientsAggregator {
                 .filter(ingredient -> ingredient != null)
                 .forEach(ingredientWarehouse::addIngredient);
         Ingredients ingredients = ingredientWarehouse.getCurrentState();
-        return ingredients;
+        return dojrzewatrUpdater.updateIfLimitReached(ingredients);
     }
 
     ListenableFuture<Ingredient> harvest(String service) {
