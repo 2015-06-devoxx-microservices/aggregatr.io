@@ -6,6 +6,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MvcResult
 import pl.devoxx.aggregatr.aggregation.model.Version
 import pl.devoxx.aggregatr.base.MicroserviceMvcWiremockSpec
+import spock.lang.Ignore
 
 import static java.net.URI.create
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -13,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 @ContextConfiguration
 @ActiveProfiles(['test', 'offline'])
+@Ignore
 class AcceptanceSpec extends MicroserviceMvcWiremockSpec {
 
     def 'should return empty warehouse after retrieving threshold amount of ingredients from external services'() {
